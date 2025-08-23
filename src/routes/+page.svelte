@@ -1,11 +1,56 @@
 <script lang="ts">
+    import { onDestroy, onMount } from "svelte";
+
   let redName = "JAMES ESHO";
   let blueName = "KUNLE JOB";
   let redScore = 0;
   let blueScore = 0;
-  let timer = 30; // seconds
   let round = 1;
   let weightClass = "-45KG";
+  let timer = 30 * 10; // store in deciseconds (tenths of seconds) → 30.0s
+  let interval: NodeJS.Timeout | null = null;
+  let running = false;
+
+  function startTimer() {
+    if (!running) {
+      running = true;
+      interval = setInterval(() => {
+        if (timer > 0) {
+          timer -= 1; // subtract 0.1 second
+        } else {
+          stopTimer();
+        }
+      }, 100); // 100ms = 0.1s
+    }
+  }
+
+  function stopTimer() {
+    running = false;
+    if (interval) clearInterval(interval);
+    interval = null;
+  }
+
+  function resetTimer(seconds: number = 30) {
+    stopTimer();
+    timer = seconds * 10;
+  }
+
+  onDestroy(() => {
+    if (interval) clearInterval(interval);
+  });
+
+  // Format timer as mm:ss.d
+  function formatTime(t: number) {
+    const totalSeconds = Math.floor(t / 10);
+    const deci = t % 10;
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}.${deci}`;
+  }
+
+  onMount(()=>{
+    startTimer()
+  })
 </script>
 
 <div class="w-full h-screen bg-black flex flex-col text-white font-bold">
