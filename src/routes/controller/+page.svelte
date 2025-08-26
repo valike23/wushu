@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import io from "socket.io-client";
 
-  const socket = io();
+  const socket = io("http://localhost:3000");
 
   // Data structure: rows of scores from judges
   let rows: { j1: { red: number[], blue: number[] }, j2: { red: number[], blue: number[] }, j3: { red: number[], blue: number[] } }[] = [];
@@ -16,13 +16,20 @@
     { j1: { red: [], blue: [] }, j2: { red: [], blue: [] }, j3: { red: [], blue: [] } }
   ];
 
-  onMount(() => {
-    socket.on("judge-score", (data: { judge: "j1" | "j2" | "j3"; side: "red" | "blue" }) => {
-      // data = { judge: "j1" | "j2" | "j3", side: "red" | "blue" }
-      table[0][data.judge][data.side].push(1); // add a "1" like on your whiteboard
+ onMount(() => {
+  socket.on("judge-score", (data: { judge: string; color: "red" | "blue"; score: number }) => {
+    console.log(data);
+
+    // normalize judge name (J1 -> j1, J2 -> j2, etc.)
+    const judgeKey = data.judge.toLowerCase() as "j1" | "j2" | "j3";
+
+    if (table[0][judgeKey]) {
+      table[0][judgeKey][data.color].push(1); // add tick mark
       table = [...table]; // trigger re-render
-    });
+    }
   });
+});
+
 
   function resetTable() {
     table = [
@@ -32,7 +39,7 @@
 </script>
 
 <div class="w-full h-screen bg-gray-900 text-white p-6">
-  <h1 class="text-3xl font-bold mb-6">Controller Screen</h1>
+  <h1 class="text-3xl font-bold mb-6">Judges Summary Screen</h1>
 
   <!-- Table -->
   <div class="overflow-x-auto">
