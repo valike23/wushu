@@ -1,13 +1,11 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import io from "socket.io-client";
+  import { io, Socket } from "socket.io-client";
 
-  const socket = io("http://localhost:3000");
+  let socket: Socket;
+  let baseUrl = "http://localhost:5173/judges?name=";
 
-  // Base URL for links
-  const baseUrl = "http://localhost:5173/judges?name=";
-
-  // Initialize with empty table
+  // Table data structure
   let table: {
     j1: { red: number[]; blue: number[] };
     j2: { red: number[]; blue: number[] };
@@ -16,19 +14,40 @@
     { j1: { red: [], blue: [] }, j2: { red: [], blue: [] }, j3: { red: [], blue: [] } }
   ];
 
-  onMount(() => {
-    socket.on("judge-score", (data: { judge: string; color: "red" | "blue"; score: number }) => {
-      console.log(data);
+  async function connectSocket() {
+    try {
+      // ask server for its LAN IP
+      const res = await fetch("http://localhost:3000/ip");
+      const data = await res.json();
+      console.log("the data is", data);
+      const serverIp = data.ip || "localhost";
 
-      // normalize judge name (J1 -> j1, J2 -> j2, etc.)
-      const judgeKey = data.judge.toLowerCase() as "j1" | "j2" | "j3";
+      socket = io(`http://${serverIp}:3000`);
+      baseUrl = `http://${serverIp}:5173/judges?name=`;
 
-      if (table[0][judgeKey]) {
-        table[0][judgeKey][data.color].push(1); // add tick mark
-        table = [...table]; // trigger re-render
-      }
-    });
-  });
+      console.log("🔗 Summary connected to:", serverIp);
+
+      // Handle scores
+      socket.on("judge-score", (data: { judge: string; color: "red" | "blue"; score: number }) => {
+        console.log("📩 Summary received:", data);
+        const judgeKey = data.judge.toLowerCase() as "j1" | "j2" | "j3";
+
+        if (table[0][judgeKey]) {
+          table[0][judgeKey][data.color].push(1);
+          table = [...table];
+        }
+      });
+
+      // Handle reset
+      socket.on("reset-scores", () => {
+        console.log("🧹 Reset received on summary");
+        resetTable();
+      });
+    } catch (err) {
+      console.error("⚠️ Could not fetch IP, falling back to localhost", err);
+      socket = io("http://localhost:3000");
+    }
+  }
 
   function resetTable() {
     table = [
@@ -41,6 +60,10 @@
       alert(`Copied: ${text}`);
     });
   }
+
+  onMount(() => {
+    connectSocket();
+  });
 </script>
 
 <div class="w-full h-screen bg-gray-900 text-white p-6 flex flex-col">

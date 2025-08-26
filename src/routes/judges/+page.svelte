@@ -1,24 +1,41 @@
 <script lang="ts">
-  import { io } from "socket.io-client";
+  import { io, Socket } from "socket.io-client";
   import { onMount } from "svelte";
 
   export let judgeName = "J1"; // default fallback
 
   let redScore = 0;
   let blueScore = 0;
+  let socket: Socket;
 
-  // connect to backend socket
-  const socket = io("http://localhost:3000"); // adjust port if needed
+  async function connectSocket() {
+    try {
+      // Fetch server IP dynamically
+      const res = await fetch("http://localhost:3000/ip");
+      const data = await res.json();
+      const serverIp = data.ip || "localhost";
 
-  onMount(() => {
+      socket = io(`http://${serverIp}:3000`);
+      console.log("🔗 Connected to server:", serverIp);
+    } catch (err) {
+      console.error("⚠️ Could not fetch server IP, falling back to localhost", err);
+      socket = io("http://localhost:3000");
+    }
+  }
+
+  onMount(async () => {
+    await connectSocket();
+
+    // Get judge name from query param (?name=j1)
     const params = new URLSearchParams(window.location.search);
     const name = params.get("name");
     if (name) {
-      judgeName = name.toUpperCase(); // show J1/J2/J3 nicely in UI
+      judgeName = name.toUpperCase(); // e.g. J1 → "J1"
     }
   });
 
   function sendScoreUpdate(color: "red" | "blue", score: number) {
+    if (!socket) return;
     socket.emit("judge-score", {
       judge: judgeName.toLowerCase(),
       color,
