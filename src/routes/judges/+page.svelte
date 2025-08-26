@@ -1,7 +1,8 @@
 <script lang="ts">
   import { io } from "socket.io-client";
+  import { onMount } from "svelte";
 
-  export let judgeName = "J1";
+  export let judgeName = "J1"; // default fallback
 
   let redScore = 0;
   let blueScore = 0;
@@ -9,10 +10,17 @@
   // connect to backend socket
   const socket = io("http://localhost:3000"); // adjust port if needed
 
+  onMount(() => {
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get("name");
+    if (name) {
+      judgeName = name.toUpperCase(); // show J1/J2/J3 nicely in UI
+    }
+  });
+
   function sendScoreUpdate(color: "red" | "blue", score: number) {
-    console.log("the score update")
     socket.emit("judge-score", {
-      judge: judgeName.toLocaleLowerCase(),
+      judge: judgeName.toLowerCase(),
       color,
       score
     });
@@ -38,7 +46,6 @@
   function decBlue() {
     if (blueScore > 0) {
       blueScore--;
-      
       sendScoreUpdate("blue", blueScore);
     }
   }
