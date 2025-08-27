@@ -7,11 +7,13 @@
   let redScore = 0;
   let blueScore = 0;
   let socket: Socket;
+  let host = '';
 
   async function connectSocket() {
     try {
+      console.log("testing host", host)
       // Fetch server IP dynamically
-      const res = await fetch("http://localhost:3000/ip");
+      const res = await fetch(`http://${host}:3000/ip`);
       const data = await res.json();
       const serverIp = data.ip || "localhost";
 
@@ -24,6 +26,7 @@
   }
 
   onMount(async () => {
+    host = location.host.split(':')[0];console.log(host)
     await connectSocket();
 
     // Get judge name from query param (?name=j1)

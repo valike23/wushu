@@ -11,6 +11,16 @@ const server = http.createServer(app);
 
 app.use(cors());
 
+app.use((req, _res, next) => {
+  console.log(`➡️  ${req.method} ${req.url}`);
+  next();
+});
+
+app.options("/ip", (req, res) => {
+  console.log(`🟡 Preflight request to ${req.url}`);
+  res.sendStatus(200); // send OK so browser is happy
+});
+
 const io = new Server(server, {
   cors: {
     origin: "*", // 👈 allow all origins for testing
