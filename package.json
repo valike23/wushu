@@ -4,7 +4,7 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"dev": "concurrently \"vite dev\" \"tsx watch server.ts\"",
+		"dev": "concurrently \"vite dev --host\" \"tsx watch server.ts\"",
 		"build": "vite build",
 		"preview": "vite preview",
 		"build:v2": "npm run build && npm run build:types && npm run build:server",
