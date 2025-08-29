@@ -11,7 +11,11 @@
     j2: { red: number[]; blue: number[] };
     j3: { red: number[]; blue: number[] };
   }[] = [
-    { j1: { red: [], blue: [] }, j2: { red: [], blue: [] }, j3: { red: [], blue: [] } }
+    {
+      j1: { red: [], blue: [] },
+      j2: { red: [], blue: [] },
+      j3: { red: [], blue: [] },
+    },
   ];
 
   async function connectSocket() {
@@ -28,15 +32,23 @@
       console.log("🔗 Summary connected to:", serverIp);
 
       // Handle scores
-      socket.on("judge-score", (data: { judge: string; color: "red" | "blue"; score: number }) => {
-        console.log("📩 Summary received:", data);
-        const judgeKey = data.judge.toLowerCase() as "j1" | "j2" | "j3";
+      socket.on(
+        "judge-score",
+        (data: { judge: string; color: "red" | "blue"; score: number }) => {
+          console.log("📩 Summary received:", data);
+          const judgeKey = data.judge.toLowerCase() as "j1" | "j2" | "j3";
 
-        if (table[0][judgeKey]) {
-          table[0][judgeKey][data.color].push(1);
-          table = [...table];
-        }
-      });
+          if (table[0][judgeKey]) {
+            if (data.score == 1) {console.log(data.score)
+              table[0][judgeKey][data.color].push(1);
+              table = [...table];
+            } else {
+               table[0][judgeKey][data.color].pop();
+              table = [...table];
+            }
+          }
+        },
+      );
 
       // Handle reset
       socket.on("reset-scores", () => {
@@ -51,7 +63,11 @@
 
   function resetTable() {
     table = [
-      { j1: { red: [], blue: [] }, j2: { red: [], blue: [] }, j3: { red: [], blue: [] } }
+      {
+        j1: { red: [], blue: [] },
+        j2: { red: [], blue: [] },
+        j3: { red: [], blue: [] },
+      },
     ];
   }
 
@@ -94,7 +110,9 @@
 
   <!-- Table -->
   <div class="flex-1 overflow-x-auto">
-    <table class="table-auto border-collapse border border-gray-500 w-full text-center">
+    <table
+      class="table-auto border-collapse border border-gray-500 w-full text-center"
+    >
       <thead>
         <tr class="bg-gray-700">
           <th class="border border-gray-500 px-4 py-2">J1 RED</th>
@@ -106,21 +124,26 @@
         </tr>
       </thead>
       <tbody>
-        {#each Array(Math.max(
-          table[0].j1.red.length,
-          table[0].j1.blue.length,
-          table[0].j2.red.length,
-          table[0].j2.blue.length,
-          table[0].j3.red.length,
-          table[0].j3.blue.length
-        )).fill(0) as _, rowIndex}
+        {#each Array(Math.max(table[0].j1.red.length, table[0].j1.blue.length, table[0].j2.red.length, table[0].j2.blue.length, table[0].j3.red.length, table[0].j3.blue.length)).fill(0) as _, rowIndex}
           <tr>
-            <td class="border border-gray-500 py-2">{table[0].j1.red[rowIndex] || ""}</td>
-            <td class="border border-gray-500 py-2">{table[0].j1.blue[rowIndex] || ""}</td>
-            <td class="border border-gray-500 py-2">{table[0].j2.red[rowIndex] || ""}</td>
-            <td class="border border-gray-500 py-2">{table[0].j2.blue[rowIndex] || ""}</td>
-            <td class="border border-gray-500 py-2">{table[0].j3.red[rowIndex] || ""}</td>
-            <td class="border border-gray-500 py-2">{table[0].j3.blue[rowIndex] || ""}</td>
+            <td class="border border-gray-500 py-2"
+              >{table[0].j1.red[rowIndex] || ""}</td
+            >
+            <td class="border border-gray-500 py-2"
+              >{table[0].j1.blue[rowIndex] || ""}</td
+            >
+            <td class="border border-gray-500 py-2"
+              >{table[0].j2.red[rowIndex] || ""}</td
+            >
+            <td class="border border-gray-500 py-2"
+              >{table[0].j2.blue[rowIndex] || ""}</td
+            >
+            <td class="border border-gray-500 py-2"
+              >{table[0].j3.red[rowIndex] || ""}</td
+            >
+            <td class="border border-gray-500 py-2"
+              >{table[0].j3.blue[rowIndex] || ""}</td
+            >
           </tr>
         {/each}
       </tbody>
@@ -129,6 +152,8 @@
 
   <!-- Reset Button -->
   <div class="mt-6">
-    <button class="btn btn-error px-6 py-2 text-xl" on:click={resetTable}>Reset</button>
+    <button class="btn btn-error px-6 py-2 text-xl" on:click={resetTable}
+      >Reset</button
+    >
   </div>
 </div>

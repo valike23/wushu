@@ -48,25 +48,25 @@
 
   function incRed() {
     redScore++;
-    sendScoreUpdate("red", redScore);
+    sendScoreUpdate("red", 1);
   }
 
   function decRed() {
     if (redScore > 0) {
       redScore--;
-      sendScoreUpdate("red", redScore);
+      sendScoreUpdate("red", -1);
     }
   }
 
   function incBlue() {
     blueScore++;
-    sendScoreUpdate("blue", blueScore);
+    sendScoreUpdate("blue", 1);
   }
 
   function decBlue() {
     if (blueScore > 0) {
       blueScore--;
-      sendScoreUpdate("blue", blueScore);
+      sendScoreUpdate("blue", -1);
     }
   }
 </script>
